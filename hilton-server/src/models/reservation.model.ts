@@ -1,7 +1,10 @@
+import {field, ID, objectType} from '@loopback/graphql';
 import {Entity, model, property} from '@loopback/repository';
 
+@objectType({description: 'Object representing reservation'})
 @model({settings: {strict: false}})
 export class Reservation extends Entity {
+  @field(() => ID)
   @property({
     type: 'string',
     id: true,
@@ -9,41 +12,47 @@ export class Reservation extends Entity {
   })
   id?: string;
 
+  @field()
   @property({
     type: 'string',
     required: true,
   })
   guestName: string;
 
+  @field()
   @property({
     type: 'string',
     required: true,
   })
   contactInfo: string;
 
+  @field()
   @property({
     type: 'date',
     required: true,
   })
-  arrivalTime: string;
+  arrivalTime: Date;
 
+  @field({nullable: true})
   @property({
     type: 'string',
     default: 'md',
   })
   tableSize?: string;
 
+  @field()
   @property({
     type: 'string',
     required: true,
   })
   status: string;
 
-  // Define well-known properties here
-
-  // Indexer property to allow additional data
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  [prop: string]: any;
+  @field()
+  @property({
+    type: 'string',
+    required: true,
+  })
+  userId: string;
 
   constructor(data?: Partial<Reservation>) {
     super(data);

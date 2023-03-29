@@ -9,6 +9,14 @@ import {RestApplication} from '@loopback/rest';
 import {ServiceMixin} from '@loopback/service-proxy';
 import path from 'path';
 import {MySequence} from './sequence';
+import {GraphQLBindings, GraphQLComponent} from '@loopback/graphql';
+import {AuthenticationComponent} from '@loopback/authentication';
+import {
+  JWTAuthenticationComponent,
+  UserServiceBindings,
+} from '@loopback/authentication-jwt';
+import {ReservdbDataSource} from './datasources';
+import {UserCredentialsRepository, UserRepository} from './repositories';
 
 export {ApplicationConfig};
 
@@ -30,13 +38,41 @@ export class HiltonServerApplication extends BootMixin(
     });
     this.component(RestExplorerComponent);
 
+    // Graphql component
+    this.component(GraphQLComponent);
+    this.configure(GraphQLBindings.GRAPHQL_SERVER).to({
+      asMiddlewareOnly: true,
+    });
+
+    this.bind(GraphQLBindings.GRAPHQL_AUTH_CHECKER).to(
+      (resolverData, roles) => {
+        // Use resolverData and roles for authorization
+        return true;
+      },
+    );
+
+    // Bind user and credentials repository
+    this.bind(UserServiceBindings.USER_REPOSITORY).toClass(UserRepository),
+      this.bind(UserServiceBindings.USER_CREDENTIALS_REPOSITORY).toClass(
+        UserCredentialsRepository,
+      ),
+      // JWT
+      this.component(AuthenticationComponent);
+    // Mount jwt component
+    this.component(JWTAuthenticationComponent);
+    // Bind datasource
+    this.dataSource(ReservdbDataSource, UserServiceBindings.DATASOURCE_NAME);
+
+    const server = this.getSync(GraphQLBindings.GRAPHQL_SERVER);
+    this.expressMiddleware('middleware.express.GraphQL', server.expressApp);
+
     this.projectRoot = __dirname;
     // Customize @loopback/boot Booter Conventions here
     this.bootOptions = {
       controllers: {
         // Customize ControllerBooter Conventions here
-        dirs: ['controllers'],
-        extensions: ['.controller.js'],
+        dirs: ['controllers', 'graphql-resolvers'],
+        extensions: ['.js'],
         nested: true,
       },
     };

@@ -11,7 +11,7 @@ import {UserCredentials} from '../models/user-credentials.model';
 import {ReservationRepository} from './reservation.repository';
 import {UserCredentialsRepository} from './user-credentials.repository';
 
-export class UserRepository extends DefaultCrudRepository<
+export class _UserRepository extends DefaultCrudRepository<
   User,
   typeof User.prototype.id,
   UserRelations

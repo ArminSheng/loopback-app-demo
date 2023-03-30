@@ -16,12 +16,13 @@ import {
   post,
   requestBody,
 } from '@loopback/rest';
+import {PermissionKey} from '../authorization';
 import {User, Reservation} from '../models';
-import {UserRepository} from '../repositories';
+import {GuestRepository} from '../repositories';
 
 export class UserReservationController {
   constructor(
-    @repository(UserRepository) protected userRepository: UserRepository,
+    @repository(GuestRepository) protected userRepository: GuestRepository,
   ) {}
 
   @authenticate('jwt')
@@ -44,7 +45,12 @@ export class UserReservationController {
     return this.userRepository.reservations(id).find(filter);
   }
 
-  @authenticate('jwt')
+  @authenticate({
+    strategy: 'jwt',
+    options: {
+      required: [PermissionKey.CreateUser],
+    },
+  })
   @post('/users/{id}/reservation', {
     responses: {
       '200': {
@@ -71,7 +77,13 @@ export class UserReservationController {
     return this.userRepository.reservations(id).create(reservation);
   }
 
-  @authenticate('jwt')
+  // @authenticate('jwt')
+  @authenticate({
+    strategy: 'jwt',
+    options: {
+      required: [PermissionKey.ViewOwnUser],
+    },
+  })
   @patch('/users/{id}/reservation', {
     responses: {
       '200': {

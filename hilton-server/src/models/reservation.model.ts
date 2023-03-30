@@ -54,6 +54,13 @@ export class Reservation extends Entity {
   })
   userId: string;
 
+  @field()
+  @property({
+    type: 'string',
+    required: true,
+  })
+  guestId: string;
+
   constructor(data?: Partial<Reservation>) {
     super(data);
   }

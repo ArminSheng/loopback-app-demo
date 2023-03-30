@@ -1,11 +1,10 @@
 import {field, ID, objectType} from '@loopback/graphql';
-import {Entity, model, property, hasMany, hasOne} from '@loopback/repository';
+import {Entity, model, property, hasMany} from '@loopback/repository';
 import {Reservation} from './reservation.model';
-import {UserCredentials} from './user-credentials.model';
 
 @objectType({description: 'Object representing user'})
 @model()
-export class User extends Entity {
+export class Guest extends Entity {
   @field(() => ID)
   @property({
     type: 'string',
@@ -21,6 +20,13 @@ export class User extends Entity {
   })
   username: string;
 
+  @field()
+  @property({
+    type: 'string',
+    required: true,
+  })
+  email: string;
+
   @property({
     type: 'string',
     required: true,
@@ -34,27 +40,23 @@ export class User extends Entity {
   })
   contact?: string;
 
-  // @field()
-  // @property({
-  //   type: 'boolean',
-  //   default: false,
-  // })
-  // isEmployee?: boolean;
+  @property.array(String)
+  permissions: String[];
 
   @field(() => [Reservation])
   @hasMany(() => Reservation)
   reservations: Reservation[];
 
-  @hasOne(() => UserCredentials)
-  userCredentials: UserCredentials;
+  // @hasOne(() => UserCredentials)
+  // userCredentials: UserCredentials;
 
-  constructor(data?: Partial<User>) {
+  constructor(data?: Partial<Guest>) {
     super(data);
   }
 }
 
-export interface UserRelations {
+export interface GuestRelations {
   // describe navigational properties here
 }
 
-export type UserWithRelations = User & UserRelations;
+export type GuestWithRelations = Guest & GuestRelations;

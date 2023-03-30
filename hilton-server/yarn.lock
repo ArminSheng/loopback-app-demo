@@ -532,6 +532,15 @@
     lodash "^4.17.21"
     tslib "^2.5.0"
 
+"@loopback/authorization@^0.12.9":
+  version "0.12.9"
+  resolved "https://registry.yarnpkg.com/@loopback/authorization/-/authorization-0.12.9.tgz#95bb2ee7e20a63218e9157c615094b04e27ce2a8"
+  integrity sha512-exgd5iOqVlD4c56xSZlg89Wu96zO1HuziYFd/vhX5h8V/4a0rQFuuDFC7SOtVU8aXWTHSi5OswK75nopPT+g0g==
+  dependencies:
+    "@loopback/security" "^0.8.9"
+    debug "^4.3.4"
+    tslib "^2.5.0"
+
 "@loopback/boot@^5.0.9":
   version "5.0.9"
   resolved "https://registry.yarnpkg.com/@loopback/boot/-/boot-5.0.9.tgz#88aa5a79349f5232d9adcb6e52a1f9f32313a9d5"

@@ -1,4 +1,3 @@
-import {inject} from '@loopback/context';
 import {HttpErrors} from '@loopback/rest';
 import {promisify} from 'util';
 import {TokenService} from '@loopback/authentication';
@@ -17,7 +16,7 @@ const verifyAsync = promisify(jwt.verify);
 export class JWTService implements TokenService {
   constructor(
     @repository(GuestRepository)
-    public guestRepository: GuestRepository,
+    public userRepository: GuestRepository,
   ) {}
 
   async verifyToken(token: string): Promise<MyUserProfile> {
@@ -34,8 +33,8 @@ export class JWTService implements TokenService {
     let userProfile = _.pick(decryptedToken, [
       'id',
       'email',
-      'name',
-      `permissions`,
+      'username',
+      'role',
     ]);
     return Object.assign(userProfile, {[securityId]: userProfile.id});
   }
@@ -53,7 +52,7 @@ export class JWTService implements TokenService {
   }
 
   async getToken(credential: Credential): Promise<string> {
-    const foundUser = await this.guestRepository.findOne({
+    const foundUser = await this.userRepository.findOne({
       where: {email: credential.email},
     });
     if (!foundUser) {
@@ -67,8 +66,8 @@ export class JWTService implements TokenService {
     }
     const currentUser: MyUserProfile = _.pick(toJSON(foundUser), [
       'email',
-      'name',
-      'permissions',
+      'username',
+      'role',
     ]) as MyUserProfile;
     const token = await this.generateToken(currentUser);
     return token;

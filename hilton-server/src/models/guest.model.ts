@@ -13,6 +13,12 @@ export class Guest extends Entity {
   })
   id: string;
 
+  @property({
+    type: 'string',
+    id: true,
+  })
+  role: string;
+
   @field()
   @property({
     type: 'string',
@@ -40,8 +46,8 @@ export class Guest extends Entity {
   })
   contact?: string;
 
-  @property.array(String)
-  permissions: String[];
+  // @property.array(String)
+  // permissions: String[];
 
   @field(() => [Reservation])
   @hasMany(() => Reservation)

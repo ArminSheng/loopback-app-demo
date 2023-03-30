@@ -1,4 +1,5 @@
 import {authenticate} from '@loopback/authentication';
+import {authorize} from '@loopback/authorization';
 import {
   Count,
   CountSchema,
@@ -16,7 +17,7 @@ import {
   post,
   requestBody,
 } from '@loopback/rest';
-import {PermissionKey} from '../authorization';
+import {PermissionKey, Roles} from '../authorization';
 import {User, Reservation} from '../models';
 import {GuestRepository} from '../repositories';
 
@@ -51,6 +52,7 @@ export class UserReservationController {
       required: [PermissionKey.CreateUser],
     },
   })
+  @authorize({allowedRoles: [Roles.GUEST]})
   @post('/users/{id}/reservation', {
     responses: {
       '200': {
@@ -78,12 +80,8 @@ export class UserReservationController {
   }
 
   // @authenticate('jwt')
-  @authenticate({
-    strategy: 'jwt',
-    options: {
-      required: [PermissionKey.ViewOwnUser],
-    },
-  })
+  @authenticate('jwt')
+  @authorize({allowedRoles: [Roles.ADMIN, Roles.GUEST]})
   @patch('/users/{id}/reservation', {
     responses: {
       '200': {

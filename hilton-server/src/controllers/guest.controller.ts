@@ -8,6 +8,7 @@ import {
   patch,
   requestBody,
   response,
+  HttpErrors,
 } from '@loopback/rest';
 import {
   // CredentialsRequestBody,
@@ -15,6 +16,7 @@ import {
   MyAuthBindings,
   Credential,
   PermissionKey,
+  Roles,
 } from '../authorization';
 import {Guest} from '../models';
 import {GuestRepository} from '../repositories';
@@ -23,7 +25,7 @@ import {CredentialsRequestBody} from './user.controller';
 export class GuestController {
   constructor(
     @repository(GuestRepository)
-    public guestRepository: GuestRepository,
+    public userRepository: GuestRepository,
     @inject(MyAuthBindings.TOKEN_SERVICE)
     public jwtService: JWTService,
   ) {}
@@ -46,12 +48,12 @@ export class GuestController {
     })
     guest: Omit<Guest, 'id'>,
   ): Promise<Guest> {
-    guest.permissions = [
-      PermissionKey.ViewOwnUser,
-      PermissionKey.CreateUser,
-      PermissionKey.UpdateOwnUser,
-    ];
-    return this.guestRepository.create(guest);
+    const hasExist = this.userRepository.findOne({where: {email: guest.email}});
+    if (!!hasExist) {
+      throw HttpErrors(`User with email ${guest.email} has Existed.`);
+    }
+    guest.role = Roles.GUEST;
+    return this.userRepository.create(guest);
   }
 
   /**
@@ -87,7 +89,7 @@ export class GuestController {
     @param.filter(Guest, {exclude: 'where'})
     filter?: FilterExcludingWhere<Guest>,
   ): Promise<Guest> {
-    return this.guestRepository.findById(id, filter);
+    return this.userRepository.findById(id, filter);
   }
 
   @patch('/guests/{id}')
@@ -105,6 +107,6 @@ export class GuestController {
     })
     guest: Guest,
   ): Promise<void> {
-    await this.guestRepository.updateById(id, guest);
+    await this.userRepository.updateById(id, guest);
   }
 }

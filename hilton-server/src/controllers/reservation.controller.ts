@@ -1,3 +1,5 @@
+import {authenticate} from '@loopback/authentication';
+import {authorize} from '@loopback/authorization';
 import {
   Count,
   CountSchema,
@@ -17,15 +19,18 @@ import {
   requestBody,
   response,
 } from '@loopback/rest';
+import {Roles} from '../authorization';
 import {Reservation} from '../models';
 import {ReservationRepository} from '../repositories';
 
 export class ReservationController {
   constructor(
     @repository(ReservationRepository)
-    public reservationRepository : ReservationRepository,
+    public reservationRepository: ReservationRepository,
   ) {}
 
+  @authenticate('jwt')
+  @authorize({allowedRoles: [Roles.ADMIN]})
   @post('/reservations')
   @response(200, {
     description: 'Reservation model instance',
@@ -47,6 +52,8 @@ export class ReservationController {
     return this.reservationRepository.create(reservation);
   }
 
+  @authenticate('jwt')
+  @authorize({allowedRoles: [Roles.ADMIN]})
   @get('/reservations/count')
   @response(200, {
     description: 'Reservation model count',
@@ -58,6 +65,8 @@ export class ReservationController {
     return this.reservationRepository.count(where);
   }
 
+  @authenticate('jwt')
+  @authorize({allowedRoles: [Roles.ADMIN]})
   @get('/reservations')
   @response(200, {
     description: 'Array of Reservation model instances',
@@ -76,6 +85,8 @@ export class ReservationController {
     return this.reservationRepository.find(filter);
   }
 
+  @authenticate('jwt')
+  @authorize({allowedRoles: [Roles.ADMIN]})
   @patch('/reservations')
   @response(200, {
     description: 'Reservation PATCH success count',
@@ -95,6 +106,8 @@ export class ReservationController {
     return this.reservationRepository.updateAll(reservation, where);
   }
 
+  @authenticate('jwt')
+  @authorize({allowedRoles: [Roles.ADMIN]})
   @get('/reservations/{id}')
   @response(200, {
     description: 'Reservation model instance',
@@ -106,11 +119,14 @@ export class ReservationController {
   })
   async findById(
     @param.path.string('id') id: string,
-    @param.filter(Reservation, {exclude: 'where'}) filter?: FilterExcludingWhere<Reservation>
+    @param.filter(Reservation, {exclude: 'where'})
+    filter?: FilterExcludingWhere<Reservation>,
   ): Promise<Reservation> {
     return this.reservationRepository.findById(id, filter);
   }
 
+  @authenticate('jwt')
+  @authorize({allowedRoles: [Roles.ADMIN]})
   @patch('/reservations/{id}')
   @response(204, {
     description: 'Reservation PATCH success',
@@ -129,17 +145,8 @@ export class ReservationController {
     await this.reservationRepository.updateById(id, reservation);
   }
 
-  @put('/reservations/{id}')
-  @response(204, {
-    description: 'Reservation PUT success',
-  })
-  async replaceById(
-    @param.path.string('id') id: string,
-    @requestBody() reservation: Reservation,
-  ): Promise<void> {
-    await this.reservationRepository.replaceById(id, reservation);
-  }
-
+  @authenticate('jwt')
+  @authorize({allowedRoles: [Roles.ADMIN]})
   @del('/reservations/{id}')
   @response(204, {
     description: 'Reservation DELETE success',

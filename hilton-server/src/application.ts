@@ -10,22 +10,20 @@ import {ServiceMixin} from '@loopback/service-proxy';
 import path from 'path';
 import {MySequence} from './sequence';
 import {GraphQLBindings, GraphQLComponent} from '@loopback/graphql';
-import {
-  AuthenticationComponent,
-  registerAuthenticationStrategy,
-} from '@loopback/authentication';
+import {AuthenticationComponent} from '@loopback/authentication';
 import {
   JWTAuthenticationComponent,
   UserServiceBindings,
 } from '@loopback/authentication-jwt';
 import {ReservdbDataSource} from './datasources';
-import {UserCredentialsRepository, _UserRepository} from './repositories';
+import {JWTService, MyAuthBindings} from './authorization';
 import {
-  JWTService,
-  JWTStrategy,
-  MyAuthBindings,
-  UserPermissionsProvider,
-} from './authorization';
+  AuthorizationComponent,
+  AuthorizationDecision,
+  AuthorizationOptions,
+  AuthorizationTags,
+} from '@loopback/authorization';
+import {MyAuthorizationProvider} from './authorization/providers/authorization.provider';
 
 export {ApplicationConfig};
 
@@ -60,21 +58,23 @@ export class HiltonServerApplication extends BootMixin(
       },
     );
 
-    // Bind user and credentials repository
-    // this.bind(UserServiceBindings.USER_REPOSITORY).toClass(_UserRepository),
-    //   this.bind(UserServiceBindings.USER_CREDENTIALS_REPOSITORY).toClass(
-    //     UserCredentialsRepository,
-    //   ),
     // JWT
     this.component(AuthenticationComponent);
     // Mount jwt component
     this.component(JWTAuthenticationComponent);
-    // Bind JWT & permission authentication strategy related elements
-    registerAuthenticationStrategy(this, JWTStrategy);
     this.bind(MyAuthBindings.TOKEN_SERVICE).toClass(JWTService);
-    this.bind(MyAuthBindings.USER_PERMISSIONS).toProvider(
-      UserPermissionsProvider,
-    );
+
+    // Authorization
+    const authOptions: AuthorizationOptions = {
+      precedence: AuthorizationDecision.DENY,
+      defaultDecision: AuthorizationDecision.DENY,
+    };
+
+    const binding = this.component(AuthorizationComponent);
+    this.configure(binding.key).to(authOptions);
+    this.bind('authorizationProviders.my-authorizer-provider')
+      .toProvider(MyAuthorizationProvider)
+      .tag(AuthorizationTags.AUTHORIZER);
 
     // Bind datasource
     this.dataSource(ReservdbDataSource, UserServiceBindings.DATASOURCE_NAME);

@@ -11,8 +11,14 @@ export interface UserPermissionsFn {
 export interface MyUserProfile extends UserProfile {
   id: string;
   email: string;
-  name: string;
-  permissions: PermissionKey[];
+  username: string;
+  // permissions: PermissionKey[];
+  role: string;
+}
+
+export enum Roles {
+  ADMIN = 'ADMIN',
+  GUEST = 'GUEST',
 }
 
 export interface RequiredPermissions {

@@ -1,29 +1,51 @@
-import {
-  Count,
-  CountSchema,
-  Filter,
-  FilterExcludingWhere,
-  repository,
-  Where,
-} from '@loopback/repository';
+import {authenticate} from '@loopback/authentication';
+import {authorize} from '@loopback/authorization';
+import {inject} from '@loopback/core';
+import {FilterExcludingWhere, repository} from '@loopback/repository';
 import {
   post,
   param,
   get,
   getModelSchemaRef,
   patch,
-  put,
   del,
   requestBody,
   response,
+  SchemaObject,
 } from '@loopback/rest';
+import {JWTService, MyAuthBindings, Roles, Credential} from '../authorization';
 import {Employee} from '../models';
-import {EmployeeRepository} from '../repositories';
+import {GuestRepository} from '../repositories';
+
+const CredentialsSchema: SchemaObject = {
+  type: 'object',
+  required: ['email', 'password'],
+  properties: {
+    email: {
+      type: 'string',
+      format: 'email',
+    },
+    password: {
+      type: 'string',
+      minLength: 8,
+    },
+  },
+};
+
+export const CredentialsRequestBody = {
+  description: 'The input of login function',
+  required: true,
+  content: {
+    'application/json': {schema: CredentialsSchema},
+  },
+};
 
 export class AdminController {
   constructor(
-    @repository(EmployeeRepository)
-    public employeeRepository : EmployeeRepository,
+    @repository(GuestRepository)
+    public userRepository: GuestRepository,
+    @inject(MyAuthBindings.TOKEN_SERVICE)
+    public jwtService: JWTService,
   ) {}
 
   @post('/employees')
@@ -37,64 +59,37 @@ export class AdminController {
         'application/json': {
           schema: getModelSchemaRef(Employee, {
             title: 'NewEmployee',
-            
           }),
         },
       },
     })
     employee: Employee,
   ): Promise<Employee> {
-    return this.employeeRepository.create(employee);
+    employee.role = Roles.ADMIN;
+    return this.userRepository.create(employee);
   }
 
-  @get('/employees/count')
-  @response(200, {
-    description: 'Employee model count',
-    content: {'application/json': {schema: CountSchema}},
-  })
-  async count(
-    @param.where(Employee) where?: Where<Employee>,
-  ): Promise<Count> {
-    return this.employeeRepository.count(where);
-  }
-
-  @get('/employees')
-  @response(200, {
-    description: 'Array of Employee model instances',
-    content: {
-      'application/json': {
-        schema: {
-          type: 'array',
-          items: getModelSchemaRef(Employee, {includeRelations: true}),
-        },
+  /**
+   * employee login
+   * @param credentials email and password
+   */
+  @post('/employees/login', {
+    responses: {
+      '200': {
+        description: 'Token',
+        content: {},
       },
     },
   })
-  async find(
-    @param.filter(Employee) filter?: Filter<Employee>,
-  ): Promise<Employee[]> {
-    return this.employeeRepository.find(filter);
+  async login(
+    @requestBody(CredentialsRequestBody) credential: Credential,
+  ): Promise<{token: string}> {
+    const token = await this.jwtService.getToken(credential);
+    return {token};
   }
 
-  @patch('/employees')
-  @response(200, {
-    description: 'Employee PATCH success count',
-    content: {'application/json': {schema: CountSchema}},
-  })
-  async updateAll(
-    @requestBody({
-      content: {
-        'application/json': {
-          schema: getModelSchemaRef(Employee, {partial: true}),
-        },
-      },
-    })
-    employee: Employee,
-    @param.where(Employee) where?: Where<Employee>,
-  ): Promise<Count> {
-    return this.employeeRepository.updateAll(employee, where);
-  }
-
+  @authenticate('jwt')
+  @authorize({allowedRoles: [Roles.ADMIN]})
   @get('/employees/{id}')
   @response(200, {
     description: 'Employee model instance',
@@ -106,11 +101,14 @@ export class AdminController {
   })
   async findById(
     @param.path.string('id') id: string,
-    @param.filter(Employee, {exclude: 'where'}) filter?: FilterExcludingWhere<Employee>
+    @param.filter(Employee, {exclude: 'where'})
+    filter?: FilterExcludingWhere<Employee>,
   ): Promise<Employee> {
-    return this.employeeRepository.findById(id, filter);
+    return this.userRepository.findById(id, filter);
   }
 
+  @authenticate('jwt')
+  @authorize({allowedRoles: [Roles.ADMIN]})
   @patch('/employees/{id}')
   @response(204, {
     description: 'Employee PATCH success',
@@ -126,25 +124,16 @@ export class AdminController {
     })
     employee: Employee,
   ): Promise<void> {
-    await this.employeeRepository.updateById(id, employee);
+    await this.userRepository.updateById(id, employee);
   }
 
-  @put('/employees/{id}')
-  @response(204, {
-    description: 'Employee PUT success',
-  })
-  async replaceById(
-    @param.path.string('id') id: string,
-    @requestBody() employee: Employee,
-  ): Promise<void> {
-    await this.employeeRepository.replaceById(id, employee);
-  }
-
+  @authenticate('jwt')
+  @authorize({allowedRoles: [Roles.ADMIN]})
   @del('/employees/{id}')
   @response(204, {
     description: 'Employee DELETE success',
   })
   async deleteById(@param.path.string('id') id: string): Promise<void> {
-    await this.employeeRepository.deleteById(id);
+    await this.userRepository.deleteById(id);
   }
 }

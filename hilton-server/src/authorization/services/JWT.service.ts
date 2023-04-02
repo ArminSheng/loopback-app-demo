@@ -51,10 +51,13 @@ export class JWTService implements TokenService {
     return token;
   }
 
-  async getToken(credential: Credential): Promise<string> {
+  async getToken(
+    credential: Credential,
+  ): Promise<MyUserProfile & {token: string}> {
     const foundUser = await this.userRepository.findOne({
       where: {email: credential.email},
     });
+
     if (!foundUser) {
       throw new HttpErrors['NotFound'](
         `User with email ${credential.email} not found.`,
@@ -65,11 +68,12 @@ export class JWTService implements TokenService {
       throw new HttpErrors.Unauthorized('The credentials are not correct.');
     }
     const currentUser: MyUserProfile = _.pick(toJSON(foundUser), [
+      'id',
       'email',
       'username',
       'role',
     ]) as MyUserProfile;
     const token = await this.generateToken(currentUser);
-    return token;
+    return {token, ...currentUser};
   }
 }

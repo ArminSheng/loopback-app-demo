@@ -1,3 +1,4 @@
+import {authenticate} from '@loopback/authentication';
 import {inject} from '@loopback/core';
 import {
   arg,
@@ -33,8 +34,9 @@ export class ReservationResolver {
     @inject(GraphQLBindings.RESOLVER_DATA) private resolverData: ResolverData,
   ) {}
 
+  //   @authenticate('jwt')
   @query(() => [Reservation])
-  @authorized('admin')
+  //   @authorized('admin')
   async reservations(
     // @arg('filter') filter: Filter<Reservation>,
     @arg('filter', {nullable: true}) filter?: ReservationFilter,

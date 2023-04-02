@@ -1,5 +1,5 @@
 {
-  "name": "hilton-server",
+  "name": "@hilton-app/server",
   "version": "0.0.1",
   "description": "hilton-server",
   "keywords": [
@@ -31,6 +31,7 @@
     "migrate": "node ./dist/migrate",
     "preopenapi-spec": "yarn run build",
     "openapi-spec": "node ./dist/openapi-spec",
+    "graphql-schema": "node ./dist/export-graphql-schema",
     "prestart": "yarn run rebuild",
     "start": "node -r source-map-support/register .",
     "clean": "lb-clean dist *.tsbuildinfo .eslintcache",

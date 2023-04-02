@@ -1,3 +1,4 @@
+import {authenticate} from '@loopback/authentication';
 import {inject} from '@loopback/core';
 import {FilterExcludingWhere, repository} from '@loopback/repository';
 import {
@@ -10,6 +11,7 @@ import {
   response,
   HttpErrors,
 } from '@loopback/rest';
+import {CredentialsRequestBody} from '.';
 import {
   // CredentialsRequestBody,
   JWTService,
@@ -17,10 +19,10 @@ import {
   Credential,
   PermissionKey,
   Roles,
+  MyUserProfile,
 } from '../authorization';
 import {Guest} from '../models';
 import {GuestRepository} from '../repositories';
-import {CredentialsRequestBody} from './user.controller';
 
 export class GuestController {
   constructor(
@@ -70,11 +72,12 @@ export class GuestController {
   })
   async login(
     @requestBody(CredentialsRequestBody) credential: Credential,
-  ): Promise<{token: string}> {
-    const token = await this.jwtService.getToken(credential);
-    return {token};
+  ): Promise<MyUserProfile & {token: string}> {
+    const userProfile = await this.jwtService.getToken(credential);
+    return userProfile;
   }
 
+  @authenticate('jwt')
   @get('/guests/{id}')
   @response(200, {
     description: 'Guest model instance',
@@ -85,11 +88,13 @@ export class GuestController {
     },
   })
   async findById(
-    @param.path.string('id') id: string,
-    @param.filter(Guest, {exclude: 'where'})
-    filter?: FilterExcludingWhere<Guest>,
-  ): Promise<Guest> {
-    return this.userRepository.findById(id, filter);
+    @param.path.string('id') idOrMail: string,
+    // @param.filter(Guest, {exclude: 'where'})
+    // filter?: FilterExcludingWhere<Guest>,
+  ): Promise<Guest | null> {
+    return this.userRepository.findOne({
+      where: {or: [{id: idOrMail}, {email: idOrMail}]},
+    });
   }
 
   @patch('/guests/{id}')

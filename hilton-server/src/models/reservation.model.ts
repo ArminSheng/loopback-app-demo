@@ -47,12 +47,12 @@ export class Reservation extends Entity {
   })
   status: string;
 
-  @field()
-  @property({
-    type: 'string',
-    required: true,
-  })
-  userId: string;
+  // @field()
+  // @property({
+  //   type: 'string',
+  //   required: true,
+  // })
+  // userId: string;
 
   @field()
   @property({

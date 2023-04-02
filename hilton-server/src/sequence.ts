@@ -2,6 +2,7 @@ import {inject} from '@loopback/context';
 import {
   FindRoute,
   InvokeMethod,
+  MiddlewareSequence,
   ParseParams,
   Reject,
   RequestContext,

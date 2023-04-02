@@ -1,0 +1,48 @@
+schema {
+  query: Query
+  mutation: Mutation
+}
+
+"""The javascript `Date` as string. Type represents date and time as the ISO Date string."""
+scalar DateTime
+
+type Mutation {
+  cancelReservation(id: String!): SimpleResult!
+  makeReservation(reservation: ReservationInput!): Reservation!
+  markReservationAsCompleted(id: String!): SimpleResult!
+  updateReservation(id: String!, reservation: ReservationInput!): SimpleResult!
+}
+
+type Query {
+  reservations(filter: ReservationFilter): [Reservation!]!
+}
+
+"""Object representing reservation"""
+type Reservation {
+  arrivalTime: DateTime!
+  contactInfo: String!
+  guestId: String!
+  guestName: String!
+  id: ID!
+  status: String!
+  tableSize: String
+  userId: String!
+}
+
+input ReservationFilter {
+  arrivalTime: DateTime
+  status: String
+}
+
+input ReservationInput {
+  arrivalTime: DateTime
+  guestName: String
+  tableSize: String
+  userId: String
+}
+
+type SimpleResult {
+  guestName: String
+  message: String
+  ok: Boolean!
+}

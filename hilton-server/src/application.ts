@@ -51,6 +51,9 @@ export class HiltonServerApplication extends BootMixin(
       asMiddlewareOnly: true,
     });
 
+    const server = this.getSync(GraphQLBindings.GRAPHQL_SERVER);
+    this.expressMiddleware('middleware.express.GraphQL', server.expressApp);
+
     this.bind(GraphQLBindings.GRAPHQL_AUTH_CHECKER).to(
       (resolverData, roles) => {
         // Use resolverData and roles for authorization
@@ -79,15 +82,17 @@ export class HiltonServerApplication extends BootMixin(
     // Bind datasource
     this.dataSource(ReservdbDataSource, UserServiceBindings.DATASOURCE_NAME);
 
-    const server = this.getSync(GraphQLBindings.GRAPHQL_SERVER);
-    this.expressMiddleware('middleware.express.GraphQL', server.expressApp);
-
     this.projectRoot = __dirname;
     // Customize @loopback/boot Booter Conventions here
     this.bootOptions = {
+      // Customize ControllerBooter Conventions here
       controllers: {
-        // Customize ControllerBooter Conventions here
         dirs: ['controllers', 'graphql-resolvers'],
+        extensions: ['.js'],
+        nested: true,
+      },
+      graphqlResolvers: {
+        dirs: ['graphql-resolvers'],
         extensions: ['.js'],
         nested: true,
       },

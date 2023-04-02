@@ -13,7 +13,13 @@ import {
   response,
   SchemaObject,
 } from '@loopback/rest';
-import {JWTService, MyAuthBindings, Roles, Credential} from '../authorization';
+import {
+  JWTService,
+  MyAuthBindings,
+  Roles,
+  Credential,
+  MyUserProfile,
+} from '../authorization';
 import {Employee} from '../models';
 import {GuestRepository} from '../repositories';
 
@@ -83,9 +89,9 @@ export class AdminController {
   })
   async login(
     @requestBody(CredentialsRequestBody) credential: Credential,
-  ): Promise<{token: string}> {
-    const token = await this.jwtService.getToken(credential);
-    return {token};
+  ): Promise<MyUserProfile & {token: string}> {
+    const userProfile = await this.jwtService.getToken(credential);
+    return userProfile;
   }
 
   @authenticate('jwt')

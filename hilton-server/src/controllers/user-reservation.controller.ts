@@ -53,7 +53,7 @@ export class UserReservationController {
     },
   })
   @authorize({allowedRoles: [Roles.GUEST]})
-  @post('/users/{id}/reservation', {
+  @post('/users/{id}/reservations', {
     responses: {
       '200': {
         description: 'User model instance',
@@ -68,8 +68,8 @@ export class UserReservationController {
         'application/json': {
           schema: getModelSchemaRef(Reservation, {
             title: 'NewReservationInUser',
-            exclude: ['id'],
-            optional: ['userId'],
+            exclude: ['id', 'guestId'],
+            optional: [],
           }),
         },
       },
@@ -79,10 +79,9 @@ export class UserReservationController {
     return this.userRepository.reservations(id).create(reservation);
   }
 
-  // @authenticate('jwt')
   @authenticate('jwt')
   @authorize({allowedRoles: [Roles.ADMIN, Roles.GUEST]})
-  @patch('/users/{id}/reservation', {
+  @patch('/users/{id}/reservations', {
     responses: {
       '200': {
         description: 'User.Reservation PATCH success count',

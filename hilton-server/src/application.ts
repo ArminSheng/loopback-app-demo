@@ -24,7 +24,7 @@ import {
   AuthorizationTags,
 } from '@loopback/authorization';
 import {MyAuthorizationProvider} from './authorization/providers/authorization.provider';
-
+import {LoggingComponent, LoggingBindings} from '@loopback/logging';
 export {ApplicationConfig};
 
 export class HiltonServerApplication extends BootMixin(
@@ -81,6 +81,15 @@ export class HiltonServerApplication extends BootMixin(
 
     // Bind datasource
     this.dataSource(ReservdbDataSource, UserServiceBindings.DATASOURCE_NAME);
+
+    // Logging
+    this.component(LoggingComponent);
+    this.configure(LoggingBindings.FLUENT_SENDER).to({
+      host: process.env.FLUENTD_SERVICE_HOST ?? 'localhost',
+      port: +(process.env.FLUENTD_SERVICE_PORT_TCP ?? 24224),
+      timeout: 3.0,
+      reconnectInterval: 600000, // 10 minutes
+    });
 
     this.projectRoot = __dirname;
     // Customize @loopback/boot Booter Conventions here

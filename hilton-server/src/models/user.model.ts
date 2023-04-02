@@ -4,7 +4,7 @@ import {Reservation} from './reservation.model';
 
 @objectType({description: 'Object representing user'})
 @model()
-export class User extends Entity {
+export class Guest extends Entity {
   @field(() => ID)
   @property({
     type: 'string',
@@ -50,7 +50,7 @@ export class User extends Entity {
   @hasMany(() => Reservation)
   reservations: Reservation[];
 
-  constructor(data?: Partial<User>) {
+  constructor(data?: Partial<Guest>) {
     super(data);
   }
 }
@@ -59,4 +59,4 @@ export interface GuestRelations {
   // describe navigational properties here
 }
 
-export type GuestWithRelations = User & GuestRelations;
+export type GuestWithRelations = Guest & GuestRelations;

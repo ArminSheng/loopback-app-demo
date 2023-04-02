@@ -1,5 +1,6 @@
 import {authenticate} from '@loopback/authentication';
 import {authorize} from '@loopback/authorization';
+import {logInvocation} from '@loopback/logging';
 import {
   Count,
   CountSchema,
@@ -29,6 +30,7 @@ export class ReservationController {
     public reservationRepository: ReservationRepository,
   ) {}
 
+  @logInvocation()
   @authenticate('jwt')
   @authorize({allowedRoles: [Roles.ADMIN]})
   @post('/reservations')
@@ -54,19 +56,6 @@ export class ReservationController {
 
   @authenticate('jwt')
   @authorize({allowedRoles: [Roles.ADMIN]})
-  @get('/reservations/count')
-  @response(200, {
-    description: 'Reservation model count',
-    content: {'application/json': {schema: CountSchema}},
-  })
-  async count(
-    @param.where(Reservation) where?: Where<Reservation>,
-  ): Promise<Count> {
-    return this.reservationRepository.count(where);
-  }
-
-  @authenticate('jwt')
-  @authorize({allowedRoles: [Roles.ADMIN]})
   @get('/reservations')
   @response(200, {
     description: 'Array of Reservation model instances',
@@ -85,6 +74,7 @@ export class ReservationController {
     return this.reservationRepository.find(filter);
   }
 
+  @logInvocation()
   @authenticate('jwt')
   @authorize({allowedRoles: [Roles.ADMIN]})
   @patch('/reservations')

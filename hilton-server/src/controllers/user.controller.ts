@@ -1,5 +1,6 @@
 import {authenticate} from '@loopback/authentication';
 import {inject} from '@loopback/core';
+import {logInvocation} from '@loopback/logging';
 import {property, repository} from '@loopback/repository';
 import {
   post,
@@ -21,7 +22,7 @@ import {
   Admin_Secret,
   CredentialsSchema,
 } from '../authorization';
-import {User as Guest} from '../models';
+import {Guest as Guest} from '../models';
 import {GuestRepository} from '../repositories';
 
 const CredentialsRequestBody = {
@@ -47,6 +48,7 @@ export class UserController {
     public jwtService: JWTService,
   ) {}
 
+  @logInvocation()
   @post('/guests/signup')
   @response(200, {
     description: 'Guest model instance',
@@ -87,6 +89,7 @@ export class UserController {
    * user login
    * @param credentials email and password
    */
+  @logInvocation()
   @post('/guests/login', {
     responses: {
       '200': {

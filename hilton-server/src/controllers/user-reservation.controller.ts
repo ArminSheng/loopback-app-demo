@@ -1,5 +1,6 @@
 import {authenticate} from '@loopback/authentication';
 import {authorize} from '@loopback/authorization';
+import {logInvocation} from '@loopback/logging';
 import {
   Count,
   CountSchema,
@@ -17,7 +18,7 @@ import {
   requestBody,
 } from '@loopback/rest';
 import {Roles} from '../authorization';
-import {Reservation, User} from '../models';
+import {Reservation, Guest} from '../models';
 import {GuestRepository} from '../repositories';
 
 export class UserReservationController {
@@ -45,6 +46,7 @@ export class UserReservationController {
     return this.userRepository.reservations(id).find(filter);
   }
 
+  @logInvocation()
   @authenticate({
     strategy: 'jwt',
   })
@@ -58,7 +60,7 @@ export class UserReservationController {
     },
   })
   async create(
-    @param.path.string('id') id: typeof User.prototype.id,
+    @param.path.string('id') id: typeof Guest.prototype.id,
     @requestBody({
       content: {
         'application/json': {

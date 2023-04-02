@@ -14,12 +14,12 @@ run `npm run dev-server`
 
 ### Features
 
-- [x] Reservation CRUD
-- [x] User CRUD
-- [x] JWT Authentication
-- [x] Role based authorization
-- [x] Restful API
-- [x] Graphql server
-- [x] SPA client
+- [✅] Reservation CRUD
+- [✅] User CRUD
+- [✅] JWT Authentication
+- [✅] Role based authorization
+- [✅] Restful API
+- [✅] Graphql server
+- [✅] SPA client
 
 Loopback, MongoDB, GraphQL, React

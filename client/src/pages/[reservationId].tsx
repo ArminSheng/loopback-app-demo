@@ -1,8 +1,9 @@
 import { FormEvent, useCallback } from "react";
 import useUser from "@/data/use-user";
-import { useCreateUpdateReservation, useReservation } from "@/data";
+import { Roles, useCreateUpdateReservation, useReservation } from "@/data";
 import { CreateOrUpdateReservation } from "@/components/create-or-update";
 import { GetServerSideProps } from "next/types";
+import { useReservationManagement } from "@/data/use-reservations-management";
 
 export default function Update({ reservationId }: Props) {
   const { user } = useUser({ redirectTo: "/login" });
@@ -11,29 +12,42 @@ export default function Update({ reservationId }: Props) {
     `filter={"where" : {"id": "${reservationId}"}}`
   );
 
+  const { trigger: adminUpdate, reservation: adminReservation } =
+    useReservationManagement(user, `id=${reservationId}`);
+
   const { trigger } = useCreateUpdateReservation(true);
   const onSubmit = useCallback(
     (e: FormEvent) => {
       e.preventDefault();
       const values = new FormData(e.target as HTMLFormElement).values();
-      trigger({
+      (user?.role === Roles.GUEST ? trigger : adminUpdate)({
         id: reservation?.id,
         guestName: values.next().value,
         contactInfo: values.next().value,
         arrivalTime: new Date(values.next().value + " " + values.next().value),
         tableSize: values.next().value,
-        status: "Reserved",
+        status: values.next().value || undefined,
       } as any);
     },
-    [reservation?.id, trigger]
+    [adminUpdate, reservation?.id, trigger, user?.role]
   );
+
+  const onCancel = useCallback(() => {
+    trigger({
+      id: reservation?.id,
+      status: "Cancelled",
+    } as any);
+  }, [reservation?.id, trigger]);
+
   return (
     <>
       <CreateOrUpdateReservation
         onSubmit={onSubmit}
-        reservation={reservation || {}}
-        title="Update"
+        onCancel={onCancel}
+        reservation={reservation || adminReservation || {}}
+        title="My Reservation"
         submitText="Update"
+        isAdmin={user?.role === Roles.ADMIN}
       />
     </>
   );

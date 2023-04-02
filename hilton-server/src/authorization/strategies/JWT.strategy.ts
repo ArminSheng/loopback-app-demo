@@ -6,8 +6,8 @@ import {
   AuthenticationBindings,
   TokenService,
 } from '@loopback/authentication';
-import {MyUserProfile, UserPermissionsFn, RequiredPermissions} from '../types';
-import {MyAuthBindings} from '../keys';
+import {MyUserProfile} from '../types';
+import {AuthBindings} from '../keys';
 
 export class JWTStrategy implements AuthenticationStrategy {
   name: string = 'jwt';
@@ -15,9 +15,7 @@ export class JWTStrategy implements AuthenticationStrategy {
   constructor(
     @inject(AuthenticationBindings.METADATA)
     public metadata: AuthenticationMetadata,
-    @inject(MyAuthBindings.USER_PERMISSIONS)
-    protected checkPermissons: UserPermissionsFn,
-    @inject(MyAuthBindings.TOKEN_SERVICE)
+    @inject(AuthBindings.TOKEN_SERVICE)
     protected tokenService: TokenService,
   ) {}
   async authenticate(request: Request): Promise<MyUserProfile | undefined> {

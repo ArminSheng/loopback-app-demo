@@ -1,6 +1,5 @@
 import {field, ID} from '@loopback/graphql';
 import {Entity, model, property} from '@loopback/repository';
-import {Guest, User} from '.';
 
 @model()
 export class Employee extends Entity {

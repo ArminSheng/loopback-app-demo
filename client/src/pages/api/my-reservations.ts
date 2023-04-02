@@ -1,6 +1,7 @@
 import { withIronSessionApiRoute } from "iron-session/next";
 import { NextApiRequest, NextApiResponse } from "next";
 import { sessionOptions, ssgEndpoint } from "@/common";
+import { Roles } from "@/data";
 
 async function myReservs(req: NextApiRequest, res: NextApiResponse) {
   const { user } = req.session;
@@ -11,15 +12,15 @@ async function myReservs(req: NextApiRequest, res: NextApiResponse) {
 
   try {
     const { data } = await ssgEndpoint<any[]>(
-      `/users/${user?.id!}/reservations`,
+      user.role === Roles.ADMIN
+        ? "/reservations"
+        : `/users/${user?.id!}/reservations`,
       {
         headers: {
           Authorization: `Bearer ${user.token}`,
         },
       }
     );
-
-    console.log({ data });
 
     res.json(data);
   } catch (error) {

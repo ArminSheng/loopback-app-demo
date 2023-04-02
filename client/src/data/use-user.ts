@@ -2,10 +2,11 @@ import { setAppToken } from "@/common";
 import Router from "next/router";
 import { useEffect } from "react";
 import useSWR from "swr";
+import { Roles } from "./types";
 
 export interface User {
   id?: string;
-  role?: string;
+  role?: Roles;
   email: string;
   username?: string;
   contact?: string;

@@ -7,6 +7,8 @@ export type ReservationComponentProps = {
   reservation: Partial<Reservation>;
   title?: string;
   submitText?: string;
+  isAdmin?: boolean;
+  onCancel?: () => void;
 };
 
 export function CreateOrUpdateReservation({
@@ -14,8 +16,9 @@ export function CreateOrUpdateReservation({
   reservation: { guestName, contactInfo, tableSize, status, arrivalTime },
   title,
   submitText = "Submit",
+  isAdmin,
+  onCancel,
 }: ReservationComponentProps) {
-  console.log(tableSize);
   const dateStr = useMemo(() => {
     if (!arrivalTime) return undefined;
     const arrival = new Date(arrivalTime);
@@ -27,6 +30,11 @@ export function CreateOrUpdateReservation({
       time: `${arrival.getHours()}:${arrival.getMinutes()}`,
     };
   }, [arrivalTime]);
+
+  const isDisabled = useMemo(
+    () => status === "Cancelled" || status === "Completed",
+    [status]
+  );
 
   return (
     <>
@@ -49,6 +57,7 @@ export function CreateOrUpdateReservation({
               <div className="mt-1">
                 <input
                   id="guestName"
+                  disabled={isDisabled}
                   name="guestName"
                   defaultValue={guestName}
                   required
@@ -67,6 +76,7 @@ export function CreateOrUpdateReservation({
               </label>
               <div className="mt-1">
                 <input
+                  disabled={isDisabled}
                   id="contactInfo"
                   name="contactInfo"
                   minLength={11}
@@ -87,6 +97,7 @@ export function CreateOrUpdateReservation({
               </label>
               <div className="mt-1">
                 <input
+                  disabled={isDisabled}
                   type="date"
                   required
                   defaultValue={dateStr?.date}
@@ -95,6 +106,7 @@ export function CreateOrUpdateReservation({
                 />
                 <input
                   type="time"
+                  disabled={isDisabled}
                   required
                   defaultValue={dateStr?.time}
                   name="arrivalHour"
@@ -113,12 +125,15 @@ export function CreateOrUpdateReservation({
               <div className="mt-1">
                 <Select
                   name="tableSize"
+                  disabled={isDisabled}
                   required
                   defaultValue={tableSize}
-                  placeholder="Select table size"
+                  placeholder={tableSize || "Select table size"}
                   id="tableSize"
                 >
-                  <option value="XS">XS</option>
+                  <option defaultChecked={true} defaultValue="XS" value="XS">
+                    XS
+                  </option>
                   <option value="MD">MD</option>
                   <option value="LG">LG</option>
                 </Select>
@@ -128,21 +143,51 @@ export function CreateOrUpdateReservation({
             {status && (
               <div>
                 <label
-                  htmlFor="tableSize"
+                  htmlFor="status"
                   className="block text-sm font-medium text-gray-700"
                 >
                   Status
                 </label>
-                <div className="mt-1 text-gray-500 italic">{status}</div>
+                {isAdmin ? (
+                  <>
+                    <Select
+                      name="status"
+                      disabled={isDisabled}
+                      defaultValue={status}
+                      placeholder={status}
+                      id="status"
+                    >
+                      <option value="Reserved">Reserved</option>
+                      <option value="Completed">Completed</option>
+                      <option value="Cancelled">Cancelled</option>
+                    </Select>
+                  </>
+                ) : (
+                  <div className="mt-1 text-gray-500 italic">{status}</div>
+                )}
               </div>
             )}
 
-            <button
-              type="submit"
-              className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-            >
-              {submitText}
-            </button>
+            {!isDisabled && (
+              <div className="flex items-center justify-between">
+                {!isAdmin && onCancel && (
+                  <button
+                    type="button"
+                    onClick={onCancel}
+                    className="mr-5 flex flex-1 justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-red-600 hover:bg-red-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
+                  >
+                    Cancel
+                  </button>
+                )}
+                <button
+                  type="submit"
+                  disabled={isDisabled}
+                  className="flex flex-1 justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                >
+                  {submitText}
+                </button>
+              </div>
+            )}
           </form>
         </div>
       </div>

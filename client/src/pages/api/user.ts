@@ -15,7 +15,6 @@ async function userRoute(req: NextApiRequest, res: NextApiResponse<User>) {
     res.json({
       isLoggedIn: false,
       id: "",
-      role: "",
       email: "",
     });
   }

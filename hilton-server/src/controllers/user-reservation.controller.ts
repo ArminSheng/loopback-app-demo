@@ -8,7 +8,6 @@ import {
   Where,
 } from '@loopback/repository';
 import {
-  del,
   get,
   getModelSchemaRef,
   getWhereSchemaFor,
@@ -17,8 +16,8 @@ import {
   post,
   requestBody,
 } from '@loopback/rest';
-import {PermissionKey, Roles} from '../authorization';
-import {User, Reservation} from '../models';
+import {Roles} from '../authorization';
+import {Reservation, User} from '../models';
 import {GuestRepository} from '../repositories';
 
 export class UserReservationController {
@@ -48,9 +47,6 @@ export class UserReservationController {
 
   @authenticate({
     strategy: 'jwt',
-    options: {
-      required: [PermissionKey.CreateUser],
-    },
   })
   @authorize({allowedRoles: [Roles.GUEST]})
   @post('/users/{id}/reservations', {
@@ -104,20 +100,4 @@ export class UserReservationController {
   ): Promise<Count> {
     return this.userRepository.reservations(id).patch(reservation, where);
   }
-
-  // @del('/users/{id}/reservations', {
-  //   responses: {
-  //     '200': {
-  //       description: 'User.Reservation DELETE success count',
-  //       content: {'application/json': {schema: CountSchema}},
-  //     },
-  //   },
-  // })
-  // async delete(
-  //   @param.path.string('id') id: string,
-  //   @param.query.object('where', getWhereSchemaFor(Reservation))
-  //   where?: Where<Reservation>,
-  // ): Promise<Count> {
-  //   return this.userRepository.reservations(id).delete(where);
-  // }
 }

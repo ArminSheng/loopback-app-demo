@@ -26,7 +26,7 @@ export default function Book() {
       <CreateOrUpdateReservation
         onSubmit={onSubmit}
         reservation={{ guestName: user?.username }}
-        title="Book"
+        title="New Booking"
       />
     </>
   );

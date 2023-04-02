@@ -1,6 +1,6 @@
 import {authenticate} from '@loopback/authentication';
 import {inject} from '@loopback/core';
-import {FilterExcludingWhere, repository} from '@loopback/repository';
+import {property, repository} from '@loopback/repository';
 import {
   post,
   param,
@@ -11,51 +11,76 @@ import {
   response,
   HttpErrors,
 } from '@loopback/rest';
-import {CredentialsRequestBody} from '.';
+import _ from 'lodash';
 import {
-  // CredentialsRequestBody,
   JWTService,
-  MyAuthBindings,
+  AuthBindings,
   Credential,
-  PermissionKey,
   Roles,
   MyUserProfile,
+  Admin_Secret,
+  CredentialsSchema,
 } from '../authorization';
-import {Guest} from '../models';
+import {User as Guest} from '../models';
 import {GuestRepository} from '../repositories';
 
-export class GuestController {
+const CredentialsRequestBody = {
+  description: 'The input of login function',
+  required: true,
+  content: {
+    'application/json': {schema: CredentialsSchema},
+  },
+};
+
+class SignUpDTO extends Guest {
+  @property({
+    type: 'string',
+  })
+  adminSecret?: string;
+}
+
+export class UserController {
   constructor(
     @repository(GuestRepository)
     public userRepository: GuestRepository,
-    @inject(MyAuthBindings.TOKEN_SERVICE)
+    @inject(AuthBindings.TOKEN_SERVICE)
     public jwtService: JWTService,
   ) {}
 
   @post('/guests/signup')
   @response(200, {
     description: 'Guest model instance',
-    content: {'application/json': {schema: getModelSchemaRef(Guest)}},
+    content: {'application/json': {schema: getModelSchemaRef(SignUpDTO)}},
   })
   async create(
     @requestBody({
       content: {
         'application/json': {
-          schema: getModelSchemaRef(Guest, {
+          schema: getModelSchemaRef(SignUpDTO, {
             title: 'NewGuest',
             exclude: ['id'],
           }),
         },
       },
     })
-    guest: Omit<Guest, 'id'>,
-  ): Promise<Guest> {
-    const hasExist = this.userRepository.findOne({where: {email: guest.email}});
+    guest: Omit<SignUpDTO, 'id'>,
+  ): Promise<MyUserProfile & {token: string}> {
+    const hasExist = await this.userRepository.findOne({
+      where: {email: guest.email},
+    });
+
     if (!!hasExist) {
       throw HttpErrors(`User with email ${guest.email} has Existed.`);
     }
-    guest.role = Roles.GUEST;
-    return this.userRepository.create(guest);
+
+    guest.role = guest.adminSecret === Admin_Secret ? Roles.ADMIN : Roles.GUEST;
+    await this.userRepository.create(_.omit(guest, ['adminSecret']));
+    const userProfile = await this.login({
+      email: guest.email,
+      password: guest.password,
+    });
+
+    return userProfile;
   }
 
   /**

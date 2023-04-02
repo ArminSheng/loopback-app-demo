@@ -44,6 +44,7 @@ export class MySequence implements SequenceHandler {
       ) {
         Object.assign(err, {statusCode: 401 /* Unauthorized */});
       }
+
       this.reject(context, err);
       return;
     }

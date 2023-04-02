@@ -1,4 +1,5 @@
 import { fetcher } from "@/common";
+import { Roles } from "@/data";
 import useUser from "@/data/use-user";
 import Link from "next/link";
 import { useCallback } from "react";
@@ -9,7 +10,7 @@ export function Navbar() {
     fetcher.post("api/logout").then(mutateUser);
   }, [mutateUser]);
 
-  //   if (!user || !user.isLoggedIn) return null;
+  if (!user || !user.isLoggedIn) return null;
 
   return (
     <>
@@ -23,9 +24,20 @@ export function Navbar() {
               >
                 Home
               </Link>
+              <Link
+                href={"/book"}
+                className="px-3 py-1 font-medium text-md text-label-1 dark:text-dark-label-1 transition duration-300 ease-in-out hover:text-red-700"
+              >
+                Book
+              </Link>
             </div>
-            <div className="" onClick={logout}>
-              Logout
+            <div className="flex items-center justify-between">
+              <span className="mr-4 text-black">
+                Hi {user.role === Roles.ADMIN ? "Admin" : "Guest"}
+              </span>
+              <div className="cursor-pointer text-gray-500" onClick={logout}>
+                Logout
+              </div>
             </div>
           </div>
         </nav>

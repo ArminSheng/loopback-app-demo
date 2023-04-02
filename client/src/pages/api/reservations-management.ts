@@ -2,7 +2,7 @@ import { withIronSessionApiRoute } from "iron-session/next";
 import { NextApiRequest, NextApiResponse } from "next";
 import { sessionOptions, ssgEndpoint } from "@/common";
 
-async function createOrUpdate(req: NextApiRequest, res: NextApiResponse) {
+async function update(req: NextApiRequest, res: NextApiResponse) {
   const { user } = req.session;
 
   if (!user || !user.id) {
@@ -12,7 +12,7 @@ async function createOrUpdate(req: NextApiRequest, res: NextApiResponse) {
 
   try {
     const { data } = await ssgEndpoint.request<any[]>({
-      url: `/users/${user?.id!}/reservations`,
+      url: `/reservations/${req.query.id}`,
       method: req.method || "get",
       data: req.body.data,
       params: req.query,
@@ -20,6 +20,7 @@ async function createOrUpdate(req: NextApiRequest, res: NextApiResponse) {
         Authorization: `Bearer ${user.token}`,
       },
     });
+    // .catch((d) => console.log(d.data.error));
 
     res.json(data);
   } catch (error) {
@@ -27,4 +28,4 @@ async function createOrUpdate(req: NextApiRequest, res: NextApiResponse) {
   }
 }
 
-export default withIronSessionApiRoute(createOrUpdate, sessionOptions);
+export default withIronSessionApiRoute(update, sessionOptions);

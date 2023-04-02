@@ -6,3 +6,8 @@ export type Reservation = {
   tableSize?: string;
   arrivalTime?: string;
 };
+
+export enum Roles {
+  ADMIN = "ADMIN",
+  GUEST = "GUEST",
+}

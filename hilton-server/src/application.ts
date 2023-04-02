@@ -5,7 +5,7 @@ import {
   RestExplorerComponent,
 } from '@loopback/rest-explorer';
 import {RepositoryMixin} from '@loopback/repository';
-import {RestApplication} from '@loopback/rest';
+import {RestApplication, RestBindings} from '@loopback/rest';
 import {ServiceMixin} from '@loopback/service-proxy';
 import path from 'path';
 import {MySequence} from './sequence';
@@ -16,7 +16,7 @@ import {
   UserServiceBindings,
 } from '@loopback/authentication-jwt';
 import {ReservdbDataSource} from './datasources';
-import {JWTService, MyAuthBindings} from './authorization';
+import {JWTService, AuthBindings} from './authorization';
 import {
   AuthorizationComponent,
   AuthorizationDecision,
@@ -65,8 +65,8 @@ export class HiltonServerApplication extends BootMixin(
     this.component(AuthenticationComponent);
     // Mount jwt component
     this.component(JWTAuthenticationComponent);
-    this.bind(MyAuthBindings.TOKEN_SERVICE).toClass(JWTService);
-
+    this.bind(AuthBindings.TOKEN_SERVICE).toClass(JWTService);
+    this.bind(RestBindings.ERROR_WRITER_OPTIONS).to({debug: true});
     // Authorization
     const authOptions: AuthorizationOptions = {
       precedence: AuthorizationDecision.DENY,
